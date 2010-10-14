@@ -7,70 +7,25 @@ if ( supportsCanvas ){
     };
 }
 
-var hasSameOrigin = (function ( window, document ) {
+function closePixelate( img, renderOptions ) {
 
-    var page = document.location,
-        protocol = page.protocol,
-        domain = document.domain,
-        port = page.port ? ':' + page.port : '',
-        sop_string = protocol + '//' + domain + port,
-        sop_regex = new RegExp('^' + sop_string),
-        http_regex = /^http(?:s*)/,
-        data_regex = /^data:/,
-        closure = function (url)
-        {
-            var is_local = (!http_regex.test(url)) || data_regex.test(url),
-                is_same_origin = sop_regex.test(url);
+    var onCanvasReady = function ( canvas, image ) {
 
-            return is_local || is_same_origin;
-        };
+      var parent = image.parentNode,
+        ctx = canvas.getContext('2d');
 
-    return closure;
+      canvas.className = image.className;
+      canvas.id = image.id;
 
-})( window, document );
+      // perform the Close pixelations
+      processData( ctx, renderOptions, image.width, image.height );
 
-function closePixelate( img, renderOptions ) 
-{
-  var local_img = window.hasSameOrigin ? hasSameOrigin( img.src ) : true,
-    onLoadLocal = function ( e ) { renderClosePixels( e.target, renderOptions ) },
-    onLoadRemote = function ( e ) { closePixelate( e.target, renderOptions ); },
-    onDataLoaded = function ( obj )
-    {
-      var new_img = img.cloneNode(false);
-      new_img.addEventListener( 'load', onLoadRemote, false );
-      new_img.src = obj.data;
-      img.parentNode.replaceChild( new_img, img );
+      // add canvas and remove image
+      image.parentNode.replaceChild( canvas, image );
     };
 
-    if ( !local_img ) {
-      if (window.getRemoteImageData){ getRemoteImageData( img.src, onDataLoaded ); }
-    } else {
-      if (img.complete) { renderClosePixels( img, renderOptions ); } 
-      else              { img.addEventListener( 'load', onLoadLocal, false ); }
-    }
+  canvasFromImage( img, onCanvasReady );
 
-}
-
-function renderClosePixels( img, renderOptions ) 
-{
-  var parent = img.parentNode,
-    w = img.width,
-    h = img.height,
-    canvas = document.createElement('canvas'),
-    ctx = canvas.getContext('2d');
-
-  // render image in canvas
-  canvas.width = w;
-  canvas.height = h;
-  canvas.className = img.className;
-  canvas.id = img.id;
-  ctx.drawImage( img, 0, 0 );
-
-  // perform the Close pixelations
-  processData( ctx, renderOptions, w, h );
-
-  // add canvas and remove image
-  img.parentNode.replaceChild( canvas, img );
 }
 
 function processData( ctx, renderOptions, w, h )
