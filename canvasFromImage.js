@@ -1,6 +1,6 @@
-var canvasFromImage = (function (global, document, undefined){
-
-    var hasSameOrigin = (function ( window, document ) {
+var canvasFromImage = (function ( global, document, undefined )
+{
+    var hasSameOrigin = (function ( global, document ) {
 
         var page = document.location,
             protocol = page.protocol,
@@ -20,7 +20,7 @@ var canvasFromImage = (function (global, document, undefined){
 
         return closure;
 
-    })( window, document );
+    })( global, document );
 
     function getRemoteImageData( img_url, callback )
     {
@@ -41,57 +41,27 @@ var canvasFromImage = (function (global, document, undefined){
             document.body.appendChild(script);
     };
 
-    /*
-      function closePixelate( img, renderOptions ) 
-      {
-
-      var local_img = window.hasSameOrigin ? hasSameOrigin( img.src ) : true,
-      onLoadLocal = function ( e ) { renderClosePixels( e.target, renderOptions ) },
-      onLoadRemote = function ( e ) { closePixelate( e.target, renderOptions ); },
-      onDataLoaded = function ( obj )
-      {
-      var new_img = img.cloneNode(false);
-      new_img.addEventListener( 'load', onLoadRemote, false );
-      new_img.src = obj.data;
-      img.parentNode.replaceChild( new_img, img );
-      };
-
-      if ( !local_img ) {
-      if (window.getRemoteImageData){ getRemoteImageData( img.src, onDataLoaded ); }
-      } else {
-      if (img.complete) { renderClosePixels( img, renderOptions ); } 
-      else              { img.addEventListener( 'load', onLoadLocal, false ); }
-      }
-
-      }
-    */
-    var forgeImage = function ( img, callback ) {
-
-        var onImageLoaded = function ( event ) {
-            callback( event.target );
-        };
-
-        if ( !hasSameOrigin( img.src ) ) {
-            // remote
-            var onDataLoaded = function ( obj ) {
+    function loadImage( img, callback ) 
+    {
+        var onImageLoaded = function( e ){ callback( e.target ); },
+            onDataLoaded = function ( obj )
+            {
                 img.addEventListener( 'load', onImageLoaded, false );
                 img.src = obj.data;
             };
+
+        if ( !hasSameOrigin( img.src ) ) {
             getRemoteImageData( img.src, onDataLoaded );
         } else {
-            // local
-            if ( img.complete ) {
-                callback( img )
-            } else {
-                img.addEventListener( 'load', onImageLoaded, false ); 
-            }
+            img.complete 
+                ? callback( img ) 
+                : img.addEventListener( 'load', onImageLoaded, false );
         }
-        
-    };
+    }
 
     function canvasFromImage( img, onCanvasReady, onImageLoaded )
     {
-        var onImageLoaded = function ( img )
+        onImageLoaded = onImageLoaded || function ( img )
         {
             var canvas = document.createElement('canvas'),
                 ctx = canvas.getContext('2d');
@@ -102,8 +72,9 @@ var canvasFromImage = (function (global, document, undefined){
             onCanvasReady( canvas, img );
         };
 
-        forgeImage( img, onImageLoaded);
+        loadImage( img, onImageLoaded );
     }
 
     return canvasFromImage;
+
 })(window, document);

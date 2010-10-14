@@ -9,23 +9,23 @@ if ( supportsCanvas ){
 
 function closePixelate( img, renderOptions ) {
 
-    var onCanvasReady = function ( canvas, image ) {
+  var onCanvasReady = function ( canvas, image ) {
 
-      var parent = image.parentNode,
-        ctx = canvas.getContext('2d');
+    var parent = image.parentNode,
+      ctx = canvas.getContext('2d');
 
-      canvas.className = image.className;
-      canvas.id = image.id;
+    canvas.className = image.className;
+    canvas.id = image.id;
 
-      // perform the Close pixelations
-      processData( ctx, renderOptions, image.width, image.height );
+    // perform the Close pixelations
+    processData( ctx, renderOptions, image.width, image.height );
 
-      // add canvas and remove image
-      image.parentNode.replaceChild( canvas, image );
-    };
+    // add canvas and remove image
+    image.parentNode.replaceChild( canvas, image );
+  },
+  onImageLoaded /*= function ( img ){}*/;
 
-  canvasFromImage( img, onCanvasReady );
-
+  canvasFromImage( img, onCanvasReady, onImageLoaded );
 }
 
 function processData( ctx, renderOptions, w, h )
