@@ -36,9 +36,9 @@ var canvasFromImage = (function ( global, document, undefined )
             service_url = service_root + "?url=" + escape(img_url) + "&callback=" + cb_name,
             script = document.createElement('script');
 
-            cb_stack.push( callback );
-            script.src = service_url;
-            document.body.appendChild(script);
+        cb_stack.push( callback );
+        script.src = service_url;
+        document.body.appendChild(script);
     };
 
     function loadImage( img, callback ) 
